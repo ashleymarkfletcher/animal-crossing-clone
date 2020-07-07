@@ -78,6 +78,7 @@
       import { ShaderPass } from './jsm/postprocessing/ShaderPass.js'
       import { CurvedWorld } from './jsm/shaders/CurvedWorld.js'
       import { CurvedWorldTree } from './jsm/shaders/CurvedWorldTree.js'
+      import { CurvedWorldHouse } from './jsm/shaders/CurvedWorldHouse.js'
       import { OBJLoader } from './jsm/loaders/OBJLoader.js'
       import { MTLLoader } from './jsm/loaders/MTLLoader.js'
       import { GLTFLoader } from './jsm/loaders/GLTFLoader.js'
@@ -342,6 +343,8 @@
         var floorMaterial = new THREE.ShaderMaterial(CurvedWorld)
 
         var textureTree = new THREE.TextureLoader().load('./textures/0_BaseTree_baseColor.png')
+        var textureHouse = new THREE.TextureLoader().load('./animal-crossing-house/textures/Base_Color.jpg')
+        var textureHouse2 = new THREE.TextureLoader().load('./animal-crossing-house/textures/Base_Color_1.jpg')
 
         CurvedWorldTree.uniforms = {
           tDiffuse: { value: null },
@@ -361,6 +364,38 @@
         treeMaterial.transparent = false
         treeMaterial.alphaTest = 0.5
         // treeMaterial.depthTest = false;
+
+        CurvedWorldHouse.uniforms = {
+          tDiffuse: { value: null },
+          opacity: { value: 1.0 },
+          tDiffuse: {
+            type: 't',
+            value: textureHouse,
+          },
+          textRepeat: {
+            type: 'f',
+            value: 1,
+          },
+          tileFactor: { value: 1 },
+        }
+
+        var houseMaterial = new THREE.ShaderMaterial(CurvedWorldHouse)
+
+        CurvedWorldHouse.uniforms = {
+          tDiffuse: { value: null },
+          opacity: { value: 1.0 },
+          tDiffuse: {
+            type: 't',
+            value: textureHouse2,
+          },
+          textRepeat: {
+            type: 'f',
+            value: 1,
+          },
+          tileFactor: { value: 1 },
+        }
+
+        var houseMaterial2 = new THREE.ShaderMaterial(CurvedWorldHouse)
 
         var floor = new THREE.Mesh(floorGeometry, floorMaterial)
 
@@ -441,7 +476,23 @@
           }
         })
 
-        //
+        loader.load('./animal-crossing-house/source/AnimalCrossingHouse.fbx', function (object) {
+          object.position.y = 0
+          object.scale.set(0.25, 0.25, 0.25)
+          object.rotation.y = Math.PI / 2
+
+          scene.add(object)
+          console.log(object)
+
+          object.traverse((child) => {
+            if (child.isMesh) {
+              // child.material.transparent = false;
+              // child.material.alphaTest = 0.5;
+              // child.material.premultipliedAlpha = true;
+              child.material = [houseMaterial, houseMaterial2]
+            }
+          })
+        })
 
         renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
         renderer.setPixelRatio(window.devicePixelRatio)
